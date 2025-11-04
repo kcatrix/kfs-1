@@ -1,19 +1,19 @@
-ASM = nasm
-CC = gcc
-LD = ld
-CFLAGS = -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs
-
 all: kernel.iso
 
 boot/boot.o: boot/boot.s
-	$(ASM) -f elf32 $< -o $@
+	nasm -f elf32 boot/boot.s -o boot/boot.o
 
-kernel/kernel.o: kernel/main.c kernel/screen.c
-	$(CC) $(CFLAGS) -m32 -c kernel/main.c -o kernel/main.o
-	$(CC) $(CFLAGS) -m32 -c kernel/screen.c -o kernel/screen.o
+kernel/main.o: kernel/main.c
+	gcc -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs -c -o kernel/main.o kernel/main.c
 
-kernel.bin: boot/boot.o kernel/main.o kernel/screen.o linker.ld
-	$(LD) -m elf_i386 -T linker.ld -o kernel.bin boot/boot.o kernel/main.o kernel/screen.o
+kernel/screen.o: kernel/screen.c
+	gcc -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs -c -o kernel/screen.o kernel/screen.c
+
+kernel/ports.o: kernel/ports.c
+	gcc -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs -c -o kernel/ports.o kernel/ports.c
+
+kernel.bin: boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o
+	ld -m elf_i386 -T linker.ld -o kernel.bin boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o
 
 kernel.iso: kernel.bin
 	mkdir -p iso/boot/grub
@@ -23,7 +23,7 @@ kernel.iso: kernel.bin
 	echo 'menuentry "KFS1" { multiboot /boot/kernel.bin }' >> iso/boot/grub/grub.cfg
 	grub-mkrescue -o kernel.iso iso/
 
-run: kernel.iso
+run:
 	qemu-system-i386 -cdrom kernel.iso
 
 clean:
