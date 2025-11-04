@@ -12,8 +12,11 @@ kernel/screen.o: kernel/screen.c
 kernel/ports.o: kernel/ports.c
 	gcc -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs -c -o kernel/ports.o kernel/ports.c
 
-kernel.bin: boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o
-	ld -m elf_i386 -T linker.ld -o kernel.bin boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o
+kernel/keyboard.o: kernel/keyboard.c
+	gcc -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs -c -o kernel/keyboard.o kernel/keyboard.c
+
+kernel.bin: boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o kernel/keyboard.o
+	ld -m elf_i386 -T linker.ld -o kernel.bin boot/boot.o kernel/main.o kernel/screen.o kernel/ports.o kernel/keyboard.o
 
 kernel.iso: kernel.bin
 	mkdir -p iso/boot/grub
