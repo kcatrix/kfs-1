@@ -1,5 +1,5 @@
-#ifndef SCREEN_H
-#define SCREEN_H
+#ifndef PORTS_H
+#define PORTS_H
 
 #define VIDEO_ADDRESS 0xB8000
 #define MAX_ROWS 25
