@@ -1,18 +1,25 @@
 #include "screen.h"
 
 void kmain() {
+    // Clear screen et activer curseur visible
     clear_screen();
+    enable_cursor(0, 15);
 
-    print_string_color("Test du scroll ↓↓↓\n\n", YELLOW);
+    // Affichage simple obligatoire
+    print_string_color("42\n\n", GREEN);
 
-    // On imprime 30 lignes pour dépasser la taille de l’écran
+    // Test du scroll et couleurs
+    print_string_color("Test du scroll avec différentes couleurs :\n", YELLOW);
+
     for (int i = 0; i < 35; i++) {
-        print_string_color("Ligne numéro ", CYAN);
-        print_string("\n");
+        unsigned char color = (i % 2 == 0) ? CYAN : LIGHT_MAGENTA;
+        kprintf_color(color, "Ligne %d : Hello World !\n", i + 1);
     }
 
-    print_string_color("\nScroll terminé.\n", GREEN);
 
-    // Boucle d’attente pour figer l’affichage
+    // Test kprintf avec %d et %s
+    kprintf_color(WHITE_ON_BLACK, "\n%s : %d lignes affichées avec scroll\n", "Résumé", 35);
+
+    // Boucle infinie pour figer l'affichage
     while (1) {}
 }

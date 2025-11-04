@@ -1,14 +1,14 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
+#include <stdarg.h>
+#include <stdint.h>
+
 #define VIDEO_ADDRESS 0xB8000
 #define MAX_ROWS 25
 #define MAX_COLS 80
 
-// --------------------
-// Couleurs VGA
-// --------------------
-// format : (foreground | (background << 4))
+// VGA colors (foreground | background << 4)
 #define BLACK 0
 #define BLUE 1
 #define GREEN 2
@@ -26,11 +26,10 @@
 #define YELLOW 14
 #define WHITE 15
 
-// Couleur par défaut
 #define WHITE_ON_BLACK (WHITE | (BLACK << 4))
 
 // --------------------
-// Fonctions écran
+// Basic screen functions
 // --------------------
 void clear_screen(void);
 void print_char(char c, int row, int col, unsigned char attr);
@@ -38,5 +37,12 @@ void print_string(const char *str);
 void print_string_color(const char *str, unsigned char color);
 void set_cursor(int row, int col);
 void scroll(void);
+void enable_cursor(unsigned char start, unsigned char end);
+
+// --------------------
+// Bonus helper
+// --------------------
+void kprintf_color(unsigned char color, const char *fmt, ...);
+
 
 #endif
