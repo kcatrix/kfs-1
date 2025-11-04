@@ -1,26 +1,30 @@
-ASM     = nasm
-CC      = gcc
-LD      = ld
-CFLAGS  = -m32 -ffreestanding -fno-pic -fno-builtin -nostdlib -nostartfiles -nodefaultlibs -Wall -Wextra
-ASFLAGS = -f elf32
+ASM = nasm
+CC = gcc
+LD = ld
+CFLAGS = -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostdlib -nostartfiles -nodefaultlibs
 
-SRC_ASM = boot/boot.s
-SRC_C   = src/kernel.c
-OBJ     = boot.o kernel.o
+all: kernel.iso
 
-all: kernel.bin
+boot/boot.o: boot/boot.s
+	$(ASM) -f elf32 $< -o $@
 
-boot.o: $(SRC_ASM)
-	$(ASM) $(ASFLAGS) -o $@ $<
+kernel/kernel.o: kernel/main.c kernel/screen.c
+	$(CC) $(CFLAGS) -m32 -c kernel/main.c -o kernel/main.o
+	$(CC) $(CFLAGS) -m32 -c kernel/screen.c -o kernel/screen.o
 
-kernel.o: $(SRC_C)
-	$(CC) $(CFLAGS) -c -o $@ $<
+kernel.bin: boot/boot.o kernel/main.o kernel/screen.o linker.ld
+	$(LD) -m elf_i386 -T linker.ld -o kernel.bin boot/boot.o kernel/main.o kernel/screen.o
 
-kernel.bin: $(OBJ) linker.ld
-	$(LD) -m elf_i386 -T linker.ld -o $@ $(OBJ)
+kernel.iso: kernel.bin
+	mkdir -p iso/boot/grub
+	cp kernel.bin iso/boot/
+	echo 'set timeout=0' > iso/boot/grub/grub.cfg
+	echo 'set default=0' >> iso/boot/grub/grub.cfg
+	echo 'menuentry "KFS1" { multiboot /boot/kernel.bin }' >> iso/boot/grub/grub.cfg
+	grub-mkrescue -o kernel.iso iso/
+
+run: kernel.iso
+	qemu-system-i386 -cdrom kernel.iso
 
 clean:
-	rm -f *.o boot/*.o src/*.o kernel.bin
-
-run: all
-	qemu-system-i386 -kernel kernel.bin
+	rm -rf *.o *.bin iso boot/*.o kernel/*.o kernel.bin kernel.iso

@@ -1,16 +1,9 @@
-ENTRY(start)
+ENTRY(_start)
 
-SECTIONS
-{
-    . = 0x100000;            /* Adresse de chargement du kernel */
-
-    .text :
-    {
-        *(.multiboot)
-        *(.text*)
-    }
-
-    .rodata : { *(.rodata*) }
-    .data   : { *(.data*) }
-    .bss    : { *(.bss*) }
+SECTIONS {
+  . = 1M;
+  .text : { *(.multiboot) *(.text) }
+  .rodata : { *(.rodata*) }
+  .data : { *(.data) }
+  .bss : { *(.bss) }
 }
