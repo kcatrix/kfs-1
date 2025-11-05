@@ -1,0 +1,169 @@
+Kcatrix KFS-1 – Kernel From Scratch 1
+Introduction
+
+Ce projet fait partie des projets Kernel From Scratch (KFS) de l’école 42.
+L’objectif principal est de créer un kernel minimal, démarrant depuis GRUB, capable d’afficher du texte sur l’écran, et gérant un clavier et plusieurs “écrans” virtuels.
+
+Autrement dit : tu écris ton système d’exploitation de zéro, sans utiliser de bibliothèques existantes ou de systèmes préinstallés.
+
+Structure du projet
+
+Le projet est organisé ainsi :
+
+kcatrix-kfs-1/
+├── linker.ld               # Script de linking
+├── Makefile                # Compile et crée l’ISO bootable
+├── boot/
+│   └── boot.s              # Code d’amorçage (boot) en ASM
+├── iso/
+│   └── boot/
+│       └── grub/
+│           └── grub.cfg   # Configuration GRUB pour booter le kernel
+└── kernel/
+    ├── main.c              # Point d’entrée du kernel et boucle principale
+    ├── screen.c/h          # Gestion de l’affichage écran et multi-screen
+    ├── ports.c/h           # Lecture/écriture sur les ports hardware
+    ├── keyboard.c/h        # Gestion du clavier
+
+Comment ça fonctionne globalement
+1. Boot ASM (boot/boot.s)
+
+Ce fichier est exécuté en premier par le BIOS via GRUB.
+
+Il contient un multiboot header, requis par GRUB pour charger le kernel.
+
+Il appelle la fonction kmain qui est le point d’entrée du kernel en C.
+
+_start:
+    extern kmain
+    call kmain
+    cli          ; désactive les interruptions
+hang:
+    hlt
+    jmp hang
+
+2. Linker (linker.ld)
+
+Définit où charger le kernel en mémoire (ici à 1MB).
+
+Sépare les sections .text (code), .data (variables initialisées), .bss (variables non initialisées), et .rodata (constantes).
+
+Indispensable car le kernel ne peut pas utiliser le linker par défaut du système.
+
+3. Makefile
+
+Compile le code ASM et C avec les flags spécifiques pour un kernel freestanding (sans bibliothèques externes).
+
+Crée la bin du kernel et une ISO bootable avec GRUB.
+
+Permet aussi de lancer le kernel via QEMU ou KVM pour tester.
+
+Exemple :
+
+make         # Compile tout et crée kernel.iso
+make run     # Lancer avec QEMU
+make run-kvm # Lancer avec KVM
+
+4. Kernel C (kernel/main.c)
+
+kmain() est le point d’entrée du kernel.
+
+Initialise les écrans virtuels et le clavier.
+
+Affiche des messages différents sur chaque écran.
+
+Boucle principale : lit les touches du clavier et les affiche à l’écran.
+
+5. Gestion des écrans (screen.c/h)
+
+Utilise la mémoire vidéo VGA à 0xB8000.
+
+Implémente plusieurs “écrans” virtuels : chaque écran a son propre buffer.
+
+Gère le curseur, le scroll et l’affichage de texte coloré.
+
+Fonctions principales :
+
+print_char / print_string_color : afficher un caractère ou une chaîne.
+
+switch_screen(int n) : changer d’écran.
+
+scroll() : faire défiler le texte.
+
+enable_cursor() : activer le curseur.
+
+kprintf_color() : version simplifiée de printf pour le kernel.
+
+6. Ports et IO (ports.c/h)
+
+Permet de lire et écrire sur les ports matériels via inb et outb.
+
+Utilisé pour :
+
+Communiquer avec le clavier.
+
+Contrôler le curseur VGA.
+
+7. Clavier (keyboard.c/h)
+
+Lit les scancodes du clavier via le port 0x60.
+
+Transforme les scancodes en caractères ASCII.
+
+Permet de changer d’écran avec F1-F4.
+
+À terme, peut être étendu pour gérer les interruptions clavier.
+
+Comment tester le kernel
+
+Compiler et créer l’ISO :
+
+make
+
+
+Lancer avec QEMU :
+
+make run
+
+
+Tester le clavier et changer d’écran avec F1-F4.
+
+Fonctionnalités implémentées
+
+Kernel bootable via GRUB.
+
+Affichage texte sur écran avec couleurs.
+
+Curseur et scroll.
+
+Multi-écran (4 écrans virtuels).
+
+Lecture clavier et affichage en temps réel.
+
+kprintf_color() pour debug et affichage formaté.
+
+Bonus potentiels
+
+Support complet du clavier (interruption IRQ1).
+
+Gestion avancée du curseur et du scroll.
+
+printf plus complet.
+
+Support multi-screen avec raccourcis clavier.
+
+Gestion de sons ou périphériques supplémentaires.
+
+Résumé
+
+Ce projet montre comment :
+
+Initialiser un kernel minimal.
+
+Communiquer avec le matériel (VGA, clavier) directement.
+
+Gérer la mémoire vidéo et plusieurs “buffers d’écran”.
+
+Créer une ISO bootable avec GRUB pour tester ton kernel.
+
+C’est la base avant d’ajouter gestion de mémoire, processus, et systèmes de fichiers.
