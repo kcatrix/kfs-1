@@ -5,8 +5,76 @@ static int cursor_row = 0;
 static int cursor_col = 0;
 static unsigned char *video_memory = (unsigned char *)VIDEO_ADDRESS;
 
+// Gestion multi-écrans
+static screen_t screens[NUM_SCREENS];
+static int current_screen = 0;
+
 static inline int valid_row(int r) { return r >= 0 && r < MAX_ROWS; }
 static inline int valid_col(int c) { return c >= 0 && c < MAX_COLS; }
+
+// --------------------
+// Multi-screen management
+// --------------------
+void init_screens(void) {
+    // Initialiser tous les buffers d'écrans
+    for (int s = 0; s < NUM_SCREENS; s++) {
+        screens[s].cursor_row = 0;
+        screens[s].cursor_col = 0;
+        
+        // Remplir avec des espaces
+        for (int i = 0; i < SCREEN_SIZE; i += 2) {
+            screens[s].buffer[i] = ' ';
+            screens[s].buffer[i + 1] = WHITE_ON_BLACK;
+        }
+    }
+    
+    // Afficher un message différent sur chaque écran
+    current_screen = 0;
+    print_string_color("=== Screen 1 ===\n", LIGHT_CYAN);
+    
+    current_screen = 1;
+    print_string_color("=== Screen 2 ===\n", LIGHT_GREEN);
+    
+    current_screen = 2;
+    print_string_color("=== Screen 3 ===\n", YELLOW);
+    
+    current_screen = 3;
+    print_string_color("=== Screen 4 ===\n", LIGHT_MAGENTA);
+    
+    // Revenir à l'écran 1
+    switch_screen(0);
+}
+
+void switch_screen(int screen_num) {
+    if (screen_num < 0 || screen_num >= NUM_SCREENS)
+        return;
+    
+    // Sauvegarder l'état de l'écran actuel
+    screens[current_screen].cursor_row = cursor_row;
+    screens[current_screen].cursor_col = cursor_col;
+    
+    // Copier la mémoire vidéo dans le buffer de l'écran actuel
+    for (int i = 0; i < SCREEN_SIZE; i++) {
+        screens[current_screen].buffer[i] = video_memory[i];
+    }
+    
+    // Changer d'écran
+    current_screen = screen_num;
+    
+    // Restaurer le buffer du nouvel écran
+    for (int i = 0; i < SCREEN_SIZE; i++) {
+        video_memory[i] = screens[current_screen].buffer[i];
+    }
+    
+    // Restaurer la position du curseur
+    cursor_row = screens[current_screen].cursor_row;
+    cursor_col = screens[current_screen].cursor_col;
+    set_cursor(cursor_row, cursor_col);
+}
+
+int get_current_screen(void) {
+    return current_screen;
+}
 
 // --------------------
 // Cursor control
@@ -115,7 +183,6 @@ void clear_screen(void) {
 
 // --------------------
 // Simple kprintf
-// Supports %s and %d only
 // --------------------
 static void itoa(int value, char* str) {
     char buffer[12];

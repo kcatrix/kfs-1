@@ -1,38 +1,56 @@
 #include "screen.h"
+#include "keyboard.h"
 
 void kmain() {
-    // Clear screen et activer curseur visible
-    // clear_screen();
-    // enable_cursor(0, 15);
-
-    // // Affichage simple obligatoire
-    // print_string_color("42\n\n", GREEN);
-
-    // // Test du scroll et couleurs
-    // print_string_color("Test du scroll avec différentes couleurs :\n", YELLOW);
-
-    // for (int i = 0; i < 35; i++) {
-    //     unsigned char color = (i % 2 == 0) ? CYAN : LIGHT_MAGENTA;
-    //     kprintf_color(color, "Ligne %d : Hello World !\n", i + 1);
-    // }
-
-
-    // // Test kprintf avec %d et %s
-    // kprintf_color(WHITE_ON_BLACK, "\n%s : %d lignes affichées avec scroll\n", "Résumé", 35);
-
-    // // Boucle infinie pour figer l'affichage
-    // while (1) {}
-
-    clear_screen();
+    // Initialiser les écrans virtuels
+    init_screens();
     enable_cursor(0, 15);
-
+    
+    // Écran 1
+    switch_screen(0);
+    clear_screen();
+    print_string_color("=== SCREEN 1 ===\n\n", LIGHT_CYAN);
     print_string_color("42\n\n", GREEN);
-    print_string_color("Keyboard test (bonus):\n", YELLOW);
-
+    print_string_color("Press F1-F4 to switch screens\n", YELLOW);
+    print_string_color("Type to test keyboard on each screen:\n\n", WHITE);
+    
+    // Écran 2
+    switch_screen(1);
+    clear_screen();
+    print_string_color("=== SCREEN 2 ===\n\n", LIGHT_GREEN);
+    print_string_color("Welcome to the second screen!\n", WHITE);
+    print_string_color("This is a separate buffer.\n\n", LIGHT_GRAY);
+    
+    // Écran 3
+    switch_screen(2);
+    clear_screen();
+    print_string_color("=== SCREEN 3 ===\n\n", YELLOW);
+    print_string_color("Testing scroll on screen 3:\n", WHITE);
+    for (int i = 0; i < 20; i++) {
+        kprintf_color(CYAN, "Line %d\n", i + 1);
+    }
+    
+    // Écran 4
+    switch_screen(3);
+    clear_screen();
+    print_string_color("=== SCREEN 4 ===\n\n", LIGHT_MAGENTA);
+    print_string_color("Color test screen:\n\n", WHITE);
+    print_string_color("RED ", RED);
+    print_string_color("GREEN ", GREEN);
+    print_string_color("BLUE ", BLUE);
+    print_string_color("YELLOW\n", YELLOW);
+    
+    // Revenir à l'écran 1
+    switch_screen(0);
+    
+    // Boucle principale - lecture clavier
     char c;
     while (1) {
         c = keyboard_read_char();
-        if (c)
-            print_char(c, -1, -1, LIGHT_CYAN);
+        if (c) {
+            // Afficher le caractère sur l'écran actuel
+            unsigned char colors[] = {LIGHT_CYAN, LIGHT_GREEN, YELLOW, LIGHT_MAGENTA};
+            print_char(c, -1, -1, colors[get_current_screen()]);
+        }
     }
 }
