@@ -167,3 +167,135 @@ Gérer la mémoire vidéo et plusieurs “buffers d’écran”.
 Créer une ISO bootable avec GRUB pour tester ton kernel.
 
 C’est la base avant d’ajouter gestion de mémoire, processus, et systèmes de fichiers.
+
+Explication des ligne :
+    1️⃣ linker.ld
+ENTRY(_start)
+
+
+Définit le point d’entrée du kernel pour le linker.
+
+_start est le label dans boot.s qui sera exécuté en premier.
+
+SECTIONS {
+  . = 1M;
+  .text : { *(.multiboot) *(.text) }
+  .rodata : { *(.rodata*) }
+  .data : { *(.data) }
+  .bss : { *(.bss) }
+}
+
+
+. = 1M; → place le kernel à l’adresse 1MB dans la mémoire.
+
+.text → contient le code exécutable et la section multiboot (obligatoire pour GRUB).
+
+.rodata → contient les constantes en lecture seule.
+
+.data → variables initialisées.
+
+.bss → variables non initialisées (remplies à 0 au boot).
+
+2️⃣ Makefile
+
+ASM, CC, LD → définissent les compilateurs / assembleurs / linker.
+
+CFLAGS → flags pour compiler un kernel “freestanding” (sans libc ni dépendances).
+
+ASMFLAGS → format ELF 32 bits pour NASM.
+
+LDFLAGS → indique au linker d’utiliser notre script linker.ld.
+
+Règles importantes :
+
+Compilation du boot
+
+boot/boot.o: boot/boot.s
+    $(ASM) $(ASMFLAGS) boot/boot.s -o boot/boot.o
+
+
+Assemble boot.s en fichier objet.
+
+Compilation du kernel
+
+kernel/main.o: kernel/main.c kernel/screen.h kernel/keyboard.h
+    $(CC) $(CFLAGS) -c -o kernel/main.o kernel/main.c
+
+
+Compile main.c en objet 32-bit, en incluant les headers nécessaires.
+
+Linkage du kernel
+
+kernel.bin: $(BOOT_OBJ) $(KERNEL_OBJS)
+    $(LD) $(LDFLAGS) -o kernel.bin $(BOOT_OBJ) $(KERNEL_OBJS)
+
+
+Combine tous les objets en un binaire bootable.
+
+Création ISO
+
+kernel.iso: kernel.bin
+    mkdir -p iso/boot/grub
+    cp kernel.bin iso/boot/
+    echo 'set timeout=0' > iso/boot/grub/grub.cfg
+    echo 'set default=0' >> iso/boot/grub/grub.cfg
+    echo 'menuentry "KFS1" { multiboot /boot/kernel.bin }' >> iso/boot/grub/grub.cfg
+    grub-mkrescue -o kernel.iso iso/
+
+
+Prépare la structure pour GRUB et génère une ISO bootable.
+
+Exécution et nettoyage
+
+run → QEMU
+
+run-kvm → QEMU avec accélération KVM
+
+debug → QEMU avec debug
+
+clean, fclean → supprime fichiers objets et ISO
+
+3️⃣ boot/boot.s
+section .multiboot
+align 4
+dd 0x1BADB002
+dd 0x00
+dd -(0x1BADB002 + 0x00)
+
+
+Multiboot header pour GRUB.
+
+0x1BADB002 → magic number multiboot.
+
+Flags = 0 → configuration simple.
+
+Troisième dd → checksum.
+
+section .text
+global _start
+_start:
+    extern kmain
+    call kmain
+    cli
+hang:
+    hlt
+    jmp hang
+
+
+_start → point d’entrée du kernel.
+
+call kmain → lance la fonction principale en C.
+
+cli → désactive les interruptions.
+
+Boucle hang → arrête le CPU si le kernel retourne.
+
+4️⃣ iso/boot/grub/grub.cfg
+set timeout=0
+set default=0
+menuentry "KFS1" { multiboot /boot/kernel.bin }
+
+
+Config minimale de GRUB pour lancer le kernel.
+
+menuentry → définit le nom et le chemin du binaire.
