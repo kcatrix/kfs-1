@@ -24,11 +24,11 @@ void kmain() {
     // while (1) {}
 
     char c;
-print_string_color("Tapez quelque chose : ", YELLOW);
-while (1) {
-    c = keyboard_read_char();
-    if (c)
-        print_char(c, -1, -1, GREEN);
-}
+    print_string_color("Tapez quelque chose : ", YELLOW);
+    while (1) {
+        c = keyboard_read_char();
+        if (c)
+            print_char(c, -1, -1, GREEN);
+    }
 
 }
