@@ -2,7 +2,7 @@
 
 void kmain() {
     // Clear screen et activer curseur visible
-    clear_screen();
+    // clear_screen();
     // enable_cursor(0, 15);
 
     // // Affichage simple obligatoire
@@ -23,12 +23,16 @@ void kmain() {
     // // Boucle infinie pour figer l'affichage
     // while (1) {}
 
+    clear_screen();
+    enable_cursor(0, 15);
+
+    print_string_color("42\n\n", GREEN);
+    print_string_color("Keyboard test (bonus):\n", YELLOW);
+
     char c;
-    print_string_color("Tapez quelque chose : ", YELLOW);
     while (1) {
         c = keyboard_read_char();
         if (c)
-            print_char(c, -1, -1, GREEN);
+            print_char(c, -1, -1, LIGHT_CYAN);
     }
-
 }

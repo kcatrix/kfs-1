@@ -10,11 +10,23 @@ static char scancode_table[128] = {
     // reste à zéro
 };
 
+
 char keyboard_read_char(void) {
     unsigned char scancode = inb(KEYBOARD_DATA_PORT);
-    if (scancode > 127) return 0; // key release
-    return scancode_table[scancode];
+
+    // On ne garde que les pressions (0–127)
+    if (scancode < 128) {
+        char c = scancode_table[scancode];
+        if (c) {
+            // Attendre que la touche soit relâchée
+            while (inb(KEYBOARD_DATA_PORT) < 128);
+            return c;
+        }
+    }
+
+    return 0;
 }
+
 
 void keyboard_init(void) {
     // Ici on pourrait activer IRQ1 via le PIC (non inclus pour KFS_1 simple)
