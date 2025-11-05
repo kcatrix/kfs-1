@@ -109,6 +109,9 @@ void scroll(void) {
             int dst = ((row - 1) * MAX_COLS + col) * 2;
             video_memory[dst] = video_memory[src];
             video_memory[dst + 1] = video_memory[src + 1];
+            // CORRECTION: Synchroniser le buffer
+            screens[current_screen].buffer[dst] = video_memory[src];
+            screens[current_screen].buffer[dst + 1] = video_memory[src + 1];
         }
     }
     // clear last row
@@ -116,6 +119,9 @@ void scroll(void) {
         int off = ((MAX_ROWS - 1) * MAX_COLS + col) * 2;
         video_memory[off] = ' ';
         video_memory[off + 1] = WHITE_ON_BLACK;
+        // CORRECTION: Synchroniser le buffer
+        screens[current_screen].buffer[off] = ' ';
+        screens[current_screen].buffer[off + 1] = WHITE_ON_BLACK;
     }
     cursor_row = MAX_ROWS - 1;
     cursor_col = 0;
@@ -144,6 +150,10 @@ void print_char(char c, int row, int col, unsigned char attr) {
         int offset = (cursor_row * MAX_COLS + cursor_col) * 2;
         video_memory[offset] = (unsigned char)c;
         video_memory[offset + 1] = attr;
+        // CORRECTION CRITIQUE: Synchroniser immédiatement le buffer
+        screens[current_screen].buffer[offset] = (unsigned char)c;
+        screens[current_screen].buffer[offset + 1] = attr;
+        
         cursor_col++;
         if (cursor_col >= MAX_COLS) {
             cursor_col = 0;
@@ -175,6 +185,9 @@ void clear_screen(void) {
     for (int i = 0; i < MAX_ROWS * MAX_COLS; i++) {
         video_memory[i * 2] = ' ';
         video_memory[i * 2 + 1] = WHITE_ON_BLACK;
+        // CORRECTION: Synchroniser le buffer
+        screens[current_screen].buffer[i * 2] = ' ';
+        screens[current_screen].buffer[i * 2 + 1] = WHITE_ON_BLACK;
     }
     cursor_row = 0;
     cursor_col = 0;

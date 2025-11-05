@@ -1,10 +1,16 @@
 #include "screen.h"
 #include "keyboard.h"
 
+// Fonction de délai simple
+static void delay(void) {
+    for (volatile int i = 0; i < 100000; i++);
+}
+
 void kmain() {
     // Initialiser les écrans virtuels
     init_screens();
     enable_cursor(0, 15);
+    keyboard_init(); // Initialiser le clavier
     
     // Écran 1
     switch_screen(0);
@@ -45,12 +51,19 @@ void kmain() {
     
     // Boucle principale - lecture clavier
     char c;
+    char last_c = 0; // Pour éviter les répétitions
+    unsigned char colors[] = {LIGHT_CYAN, LIGHT_GREEN, YELLOW, LIGHT_MAGENTA};
+    
     while (1) {
         c = keyboard_read_char();
-        if (c) {
+        if (c && c != last_c) {
             // Afficher le caractère sur l'écran actuel
-            unsigned char colors[] = {LIGHT_CYAN, LIGHT_GREEN, YELLOW, LIGHT_MAGENTA};
             print_char(c, -1, -1, colors[get_current_screen()]);
+            last_c = c;
+        } else if (!c) {
+            last_c = 0; // Réinitialiser quand aucune touche n'est pressée
         }
+        
+        delay(); // Ralentir la boucle pour éviter les lectures multiples
     }
 }
