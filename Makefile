@@ -4,10 +4,10 @@ CC = gcc
 LD = ld
 
 # Flags de compilation C (sans les flags C++)
-CFLAGS = -m32 -ffreestanding -fno-builtin -fno-stack-protector -fno-exceptions -fno-rtti \
+CFLAGS = -m32 -ffreestanding -fno-builtin -fno-stack-protector -fno-exceptions \
          -nostdlib -nostartfiles -nodefaultlibs \
          -fno-unwind-tables -fno-asynchronous-unwind-tables \
-         -Wall -Wextra
+         -Wall -Wextra -Werror
 
 # Flags ASM
 ASMFLAGS = -f elf32
