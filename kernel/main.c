@@ -15,6 +15,7 @@ void kmain() {
     // Écran 1
     switch_screen(0);
     clear_screen();
+    print_string_color("===  Welcome ===\n\n", LIGHT_CYAN);
     print_string_color("=== SCREEN 1 ===\n\n", LIGHT_CYAN);
     print_string_color("42\n\n", GREEN);
     print_string_color("Press F1-F4 to switch screens\n", YELLOW);
