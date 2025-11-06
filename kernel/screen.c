@@ -110,17 +110,14 @@ void scroll(void) {
             int dst = ((row - 1) * MAX_COLS + col) * 2;
             video_memory[dst] = video_memory[src];
             video_memory[dst + 1] = video_memory[src + 1];
-            // CORRECTION: Synchroniser le buffer
             screens[current_screen].buffer[dst] = video_memory[src];
             screens[current_screen].buffer[dst + 1] = video_memory[src + 1];
         }
     }
-    // clear last row
     for (int col = 0; col < MAX_COLS; col++) {
         int off = ((MAX_ROWS - 1) * MAX_COLS + col) * 2;
         video_memory[off] = ' ';
         video_memory[off + 1] = WHITE_ON_BLACK;
-        // CORRECTION: Synchroniser le buffer
         screens[current_screen].buffer[off] = ' ';
         screens[current_screen].buffer[off + 1] = WHITE_ON_BLACK;
     }

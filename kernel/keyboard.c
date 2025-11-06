@@ -44,7 +44,3 @@ char keyboard_read_char(void) {
 
     return 0;
 }
-
-void keyboard_init(void) {
-    // Ici on pourrait activer IRQ1 via le PIC
-}

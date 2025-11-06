@@ -10,7 +10,6 @@ void main() {
     // Initialiser les écrans virtuels
     init_screens();
     enable_cursor(0, 15);
-    keyboard_init(); // Initialiser le clavier
     
     // Écran 1
     switch_screen(0);
