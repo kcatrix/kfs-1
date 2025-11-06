@@ -1,15 +1,34 @@
-ENTRY(_start)                      # Indique au linker que le point d'entrée du programme est la fonction _start (définie dans boot.s)
+ENTRY(_start)
 
-SECTIONS { 
+SECTIONS {
+    . = 1M;
 
-  . = 1M;                          # Place le début du kernel à l’adresse 1 Mo (0x00100000), où GRUB charge le kernel
+    .text ALIGN(4K) : {
+        *(.multiboot)
+        *(.text)
+    } :code
 
-  .text : { *(.multiboot) *(.text) }  # Section du code exécutable : inclut d’abord le header multiboot, puis tout le code machine (.text)
+    .rodata ALIGN(4K) : {
+        *(.rodata*)
+    } :rodata
 
-  .rodata : { *(.rodata*) }        # Section des données en lecture seule (constantes, chaînes de caractères, etc.)
+    .data ALIGN(4K) : {
+        *(.data)
+    } :data
 
-  .data : { *(.data) }             # Section des données initialisées en lecture/écriture (ex : int x = 10;)
+    .bss ALIGN(4K) : {
+        *(COMMON)
+        *(.bss)
+    } :data
 
-  .bss : { *(.bss) }               # Section des données non initialisées (ex : int compteur;), qui seront mises à zéro au démarrage
+    /DISCARD/ : {
+        *(.eh_frame)
+        *(.note.GNU-stack)
+    }
+}
 
-}                           
+PHDRS {
+    code PT_LOAD FLAGS(5);    /* 5 = RE */
+    rodata PT_LOAD FLAGS(4);  /* 4 = R */
+    data PT_LOAD FLAGS(6);    /* 6 = RW */
+}

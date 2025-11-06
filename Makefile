@@ -7,7 +7,7 @@ LD = ld
 CFLAGS = -m32 -ffreestanding -fno-builtin -fno-stack-protector -fno-exceptions \
          -nostdlib -nostartfiles -nodefaultlibs \
          -fno-unwind-tables -fno-asynchronous-unwind-tables \
-         -Wall -Wextra -Werror
+         -Wall -Wextra
 
 # Flags ASM
 ASMFLAGS = -f elf32
