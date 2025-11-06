@@ -6,7 +6,7 @@ static void delay(void) {
     for (volatile int i = 0; i < 100000; i++);
 }
 
-void kmain() {
+void main() {
     // Initialiser les écrans virtuels
     init_screens();
     enable_cursor(0, 15);

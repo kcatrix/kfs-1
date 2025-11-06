@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "ports.h"
+#include "string.h"
 
 static int cursor_row = 0;
 static int cursor_col = 0;
@@ -194,19 +195,10 @@ void clear_screen(void) {
     set_cursor(0, 0);
 }
 
+
 // --------------------
 // Simple kprintf
 // --------------------
-static void itoa(int value, char* str) {
-    char buffer[12];
-    int i = 0, j, sign = 0;
-
-    if (value < 0) { sign = 1; value = -value; }
-    do { buffer[i++] = (value % 10) + '0'; } while ((value /= 10) > 0);
-    if (sign) buffer[i++] = '-';
-    for (j = 0; j < i; j++) str[j] = buffer[i - j - 1];
-    str[i] = '\0';
-}
 
 void kprintf_color(unsigned char color, const char *fmt, ...) {
     va_list args;
@@ -226,6 +218,30 @@ void kprintf_color(unsigned char color, const char *fmt, ...) {
             }
         } else {
             print_char(fmt[i], -1, -1, color);
+        }
+    }
+    va_end(args);
+}
+
+// printf classique (sans couleur)
+void kprintf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char buf[32];
+
+    for (int i = 0; fmt[i]; i++) {
+        if (fmt[i] == '%' && fmt[i+1]) {
+            i++;
+            if (fmt[i] == 'd') {
+                itoa(va_arg(args, int), buf);
+                print_string(buf);
+            } else if (fmt[i] == 's') {
+                print_string(va_arg(args, char *));
+            } else {
+                print_char(fmt[i], -1, -1, WHITE_ON_BLACK);
+            }
+        } else {
+            print_char(fmt[i], -1, -1, WHITE_ON_BLACK);
         }
     }
     va_end(args);

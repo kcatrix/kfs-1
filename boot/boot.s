@@ -7,8 +7,8 @@ align 4
 section .text
 global _start
 _start:
-    extern kmain
-    call kmain
+    extern main
+    call main
     cli
 hang:
     hlt

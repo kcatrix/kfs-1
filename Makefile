@@ -17,7 +17,7 @@ LDFLAGS = -m elf_i386 -T linker.ld
 
 # Fichiers objets
 BOOT_OBJ = boot/boot.o
-KERNEL_OBJS = kernel/main.o kernel/screen.o kernel/ports.o kernel/keyboard.o
+KERNEL_OBJS = kernel/main.o kernel/screen.o kernel/ports.o kernel/keyboard.o kernel/string.o
 
 # Cible par défaut
 all: kernel.iso
@@ -38,6 +38,9 @@ kernel/ports.o: kernel/ports.c kernel/ports.h
 
 kernel/keyboard.o: kernel/keyboard.c kernel/keyboard.h kernel/ports.h kernel/screen.h
 	$(CC) $(CFLAGS) -c -o kernel/keyboard.o kernel/keyboard.c
+
+kernel/string.o: kernel/string.c kernel/string.h
+	$(CC) $(CFLAGS) -c -o kernel/string.o kernel/string.c
 
 # Linkage du kernel
 kernel.bin: $(BOOT_OBJ) $(KERNEL_OBJS)
